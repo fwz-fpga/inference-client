@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import sys
 import numpy as np
-import tensorflow as tf
 import requests
-from tensorflow_serving.apis import predict_pb2
+sys.path.append('./gen_protos')
+sys.path.append('./tf_utils')
+import predict_pb2
+import tensor_util
 from google.protobuf.json_format import MessageToDict
 
 def getImageData():
@@ -18,9 +20,14 @@ def sendRequest(url):
     request.model_spec.signature_name = 'predict_images'
 
     request.inputs['images'].CopyFrom(
-        tf.make_tensor_proto(getImageData(), shape=[1]))
-
+        tensor_util.make_tensor_proto(getImageData(), shape=[1]))
     data = request.SerializeToString()
+
+    input_proto = tensor_util.make_tensor_proto(getImageData(), shape=[1])
+    print(type(input_proto))
+    input_array = tensor_util.make_ndarray(input_proto)
+    print(type(input_array))
+    print(input_array.dtype)
 
     data_type = "application/proto"
     headers = {

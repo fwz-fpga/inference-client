@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import sys
 import numpy as np
-import tensorflow as tf
 import requests
-from tensorflow_serving.apis import predict_pb2
+sys.path.append('./gen_protos')
+sys.path.append('./tf_utils')
+import predict_pb2
+import tensor_util
 from google.protobuf.json_format import MessageToDict
 
 def sendRequest(url):
@@ -13,10 +15,17 @@ def sendRequest(url):
     request.model_spec.name = 'mnist'
     request.model_spec.signature_name = 'predict_images'
 
-    array = np.random.ranf(784).reshape(1, 784).astype(np.float32)
-
+    array = np.random.ranf(784).reshape(1,784).astype(np.float32)
     request.inputs['images'].CopyFrom(
-        tf.make_tensor_proto(array, shape=[1, 784]))
+	tensor_util.make_tensor_proto(array))
+
+    input_proto = tensor_util.make_tensor_proto(array)
+    print(type(input_proto))
+    print(input_proto)
+    input_array = tensor_util.make_ndarray(input_proto)
+    print(type(input_array))
+    print(input_array)
+ 
 
     data = request.SerializeToString()
 
